@@ -20,21 +20,35 @@ extern MidiDevice midi_device;
 
 #define MIDI_CC_OFF 0
 #define MIDI_CC_ON 127
+#define MIDI_CC_INCREMENT 68
+#define MIDI_CC_DECREMENT 60
 
 enum custom_keycodes {
     MIDI_CC80 = SAFE_RANGE,
+    MIDI_CC81_UP,
+    MIDI_CC81_DOWN
 };
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record){
     switch(keycode){
         case MIDI_CC80:
-        if (record->event.pressed) {
-            midi_send_cc(&midi_device, midi_config.channel, 80, MIDI_CC_ON);
-        } else {
-            midi_send_cc(&midi_device, midi_config.channel, 80, MIDI_CC_OFF);
+            if (record->event.pressed) {
+                midi_send_cc(&midi_device, midi_config.channel, 80, MIDI_CC_ON);
+            } else {
+                midi_send_cc(&midi_device, midi_config.channel, 80, MIDI_CC_OFF);
+            }
+            return true;
+        case MIDI_CC81_UP:
+            if (record->event.pressed) {
+                midi_send_cc(&midi_device, midi_config.channel, 81, MIDI_CC_INCREMENT);
+            }
+            return true;
+        case MIDI_CC81_DOWN:
+            if (record->event.pressed) {
+                midi_send_cc(&midi_device, midi_config.channel, 81, MIDI_CC_DECREMENT);
+            }
+            return true;
         }
-        return true;
-    }
     return true;
 };
 
@@ -85,6 +99,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #if defined(ENCODER_MAP_ENABLE)
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
     [0] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
-    [1] = { ENCODER_CCW_CW(KC_TRNS, KC_TRNS) }
+    [1] = { ENCODER_CCW_CW(MIDI_CC81_DOWN, MIDI_CC81_UP) }
 };
 #endif
